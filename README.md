@@ -7,7 +7,7 @@
 
 > A lightweight, fast autoclicker for Windows. Built by [MRB Labs](https://github.com/MrBobertus)
 
-[![Download](https://img.shields.io/badge/Download-maus.exe-blue?style=for-the-badge&logo=windows)](https://github.com/MrBobertus/maus/raw/refs/heads/main/bin/Release/maus.exe)
+[![Download](https://img.shields.io/badge/Download-maus.exe-red?style=for-the-badge&logo=windows)](https://github.com/MrBobertus/maus/raw/refs/heads/main/bin/Release/maus.exe)
 
 ---
 
@@ -33,7 +33,7 @@
 
 ## Download
 
-[![Download maus.exe](https://img.shields.io/badge/Download-maus.exe-blue?style=for-the-badge&logo=windows)](https://github.com/MrBobertus/maus/raw/refs/heads/main/bin/Release/maus.exe)
+[![Download maus.exe](https://img.shields.io/badge/Download-maus.exe-red?style=for-the-badge&logo=windows)](https://github.com/MrBobertus/maus/raw/refs/heads/main/bin/Release/maus.exe)
 
 Just download and run. No installer needed.
 
