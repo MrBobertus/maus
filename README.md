@@ -2,8 +2,8 @@
   <img width="64" height="64" alt="maus icon" src="https://github.com/user-attachments/assets/79d2a23f-c941-49be-a478-1e7b894f1de1" />
 </p>
 
-<sub>V1.1</sub>
 # MAUS | Mouse Automated Utility Software
+V1.1
 
 > A lightweight, fast autoclicker for Windows. Built by [MRB Labs](https://github.com/MrBobertus)
 
