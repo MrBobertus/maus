@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
+using System.Windows.Interop;
 
 
 namespace maus
@@ -14,9 +15,14 @@ namespace maus
         // Variables
         // =========================
 
-        private DispatcherTimer clickTimer;
+        private System.Threading.Timer clickTimer;
         private bool isRunning = false;
-        private Key selectedHotkey;
+        private Key selectedHotkey = Key.F2;
+        private const int HOTKEY_ID = 1;
+        private const int EMERGENCY_HOTKEY_ID = 2;
+        private const int WM_HOTKEY = 0x0312;
+        private const string APP_VERSION = "v1.1";
+
 
         // =========================
         // Konstruktor
@@ -53,9 +59,10 @@ namespace maus
                 }
             );
 
-            clickTimer = new DispatcherTimer();
+            HotkeyBox.Text = selectedHotkey.ToString();
+            MouseButtonBox.SelectedIndex = 0;
 
-            clickTimer.Tick += ClickTimer_Tick;
+            VersionText.Text = APP_VERSION;
         }
 
 
@@ -66,6 +73,130 @@ namespace maus
 
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
+            Start_Clicker();
+        }
+
+
+        private void StopButton_Click(object sender, RoutedEventArgs e)
+        {
+            Stop_Clicker();
+        }
+
+
+        // =========================
+        // Eigene Funktionen
+        // =========================
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+
+            IntPtr handle = new WindowInteropHelper(this).Handle;
+
+            HwndSource source = HwndSource.FromHwnd(handle);
+
+            source.AddHook(WndProc);
+
+            RegisterMainHotkey();
+
+            bool emergencySuccess = RegisterHotKey(
+                handle,
+                EMERGENCY_HOTKEY_ID,
+                0,
+                (uint)KeyInterop.VirtualKeyFromKey(Key.F6));
+
+            if (!emergencySuccess)
+            {
+                MessageBox.Show(
+                    "Emergency Hotkey konnte nicht registriert werden.");
+            }
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            IntPtr handle = new WindowInteropHelper(this).Handle;
+
+            UnregisterMainHotkey();
+            UnregisterHotKey(handle, EMERGENCY_HOTKEY_ID);
+
+            base.OnClosed(e);
+        }
+
+        private IntPtr WndProc(
+            IntPtr hwnd,
+            int msg,
+            IntPtr wParam,
+            IntPtr lParam,
+            ref bool handled)
+        {
+            if (msg == WM_HOTKEY)
+            {
+                int hotkeyId = wParam.ToInt32();
+
+                if (hotkeyId == EMERGENCY_HOTKEY_ID)
+                {
+                    if (isRunning)
+                    {
+                        Stop_Clicker();
+                    }
+                }
+                else if (hotkeyId == HOTKEY_ID)
+                {
+                    if (isRunning)
+                    {
+                        Stop_Clicker();
+                    }
+                    else
+                    {
+                        Start_Clicker();
+                    }
+                }
+
+                handled = true;
+            }
+
+            return IntPtr.Zero;
+        }
+
+        private void SimulateMouse_Click()
+        {
+            int clickTypeIndex = 0;
+            MouseClickType selected = null;
+
+            Dispatcher.Invoke(() =>
+            {
+                clickTypeIndex = ClickTypeBox.SelectedIndex;
+                selected = (MouseClickType)MouseButtonBox.SelectedItem;
+            });
+
+            if (selected == null) return;
+
+            GetCursorPos(out POINT point);
+            int clickCount = clickTypeIndex == 1 ? 2 : 1;
+
+            for (int i = 0; i < clickCount; i++)
+            {
+                mouse_event(selected.Down, point.X, point.Y, 0, 0);
+                mouse_event(selected.Up, point.X, point.Y, 0, 0);
+            }
+        }
+
+        // unused keypboard simulation for future feature
+        // private void SimulateKey_Press()
+        // {
+        //     keybd_event(0x41, 0, 0, 0);
+        //     keybd_event(0x41, 0, 2, 0);
+        // }
+
+        private void IntervalBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = !int.TryParse(e.Text, out _);
+        }
+
+        private void Start_Clicker()
+        {
+            StatusText.Text = "Status: On";
+
             int hours = 0;
             int minutes = 0;
             int seconds = 0;
@@ -84,96 +215,55 @@ namespace maus
                 + (seconds * 1000)
                 + milliseconds;
 
-            clickTimer.Interval = TimeSpan.FromMilliseconds(interval);
-
-            Start_Clicker();
-        }
-
-
-        private void StopButton_Click(object sender, RoutedEventArgs e)
-        {
-            Stop_Clicker();
-        }
-
-
-
-        // =========================
-        // Eigene Funktionen
-        // =========================
-
-        private void SimulateMouse_Click()
-        {
-            int clickCount = 1;
-            GetCursorPos(out POINT point);
-            MouseClickType selected = (MouseClickType)MouseButtonBox.SelectedItem;
-
-            if (ClickTypeBox.SelectedIndex == 0)
+            if (interval < 1)
             {
-                clickCount = 1;
-            }
-            else if (ClickTypeBox.SelectedIndex == 1)
-            {
-                clickCount = 2;
+                interval = 1;
             }
 
-            for (int i = 0; i < clickCount; i++)
+            clickTimer = new System.Threading.Timer(_ =>
             {
-                mouse_event(selected.Down, point.X, point.Y, 0, 0);
-                mouse_event(selected.Up, point.X, point.Y, 0, 0);
-            }
-        }
+                SimulateMouse_Click();
+            }, null, 0, interval);
 
-        // unused keypboard simulation for future feature
-        private void SimulateKey_Press()
-        {
-            keybd_event(0x41, 0, 0, 0);
-            keybd_event(0x41, 0, 2, 0);
-        }
-
-        private void ClickTimer_Tick(object sender, EventArgs e)
-        {
-            SimulateMouse_Click();
-        }
-
-        private void IntervalBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
-        {
-            e.Handled = !int.TryParse(e.Text, out _);
-        }
-
-        private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == selectedHotkey)
-            {
-                if (isRunning)
-                {
-                    Stop_Clicker();
-                }
-                else
-                {
-                    Start_Clicker();
-                }
-            }
-        }
-
-        private void Start_Clicker()
-        {
-            StatusText.Text = "Status: On";
-            clickTimer.Start();
             isRunning = true;
         }
 
         private void Stop_Clicker()
         {
-            StatusText.Text = "Status: Off";
-            clickTimer.Stop();
+            Dispatcher.Invoke(() => StatusText.Text = "Status: Off");
+            clickTimer?.Dispose();
+            clickTimer = null;
             isRunning = false;
         }
 
         private void HotkeyBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
+            if (e.Key == Key.F6)
+            {
+                return;
+            }
+            UnregisterMainHotkey();
             selectedHotkey = e.Key;
-            HotkeyBox.Text = e.Key.ToString();
+            RegisterMainHotkey();
+            HotkeyBox.Text = selectedHotkey.ToString();
             e.Handled = true;
+        }
+
+        private void RegisterMainHotkey()
+        {
+            IntPtr handle = new WindowInteropHelper(this).Handle;
+
+            RegisterHotKey(
+                handle,
+                HOTKEY_ID,
+                0,
+                (uint)KeyInterop.VirtualKeyFromKey(selectedHotkey));
+        }
+
+        private void UnregisterMainHotkey()
+        {
+            IntPtr handle = new WindowInteropHelper(this).Handle;
+            UnregisterHotKey(handle, HOTKEY_ID);
         }
 
         // =========================
@@ -200,6 +290,18 @@ namespace maus
         [DllImport("user32.dll")]
         static extern bool GetCursorPos(out POINT lpPoint);
 
+        [DllImport("user32.dll")]
+        private static extern bool RegisterHotKey(
+            IntPtr hWnd,
+            int id,
+            uint fsModifiers,
+            uint vk);
+
+
+        [DllImport("user32.dll")]
+        private static extern bool UnregisterHotKey(
+            IntPtr hWnd,
+            int id);
 
         // =========================
         // Hilfsdaten

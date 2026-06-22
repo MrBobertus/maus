@@ -1,0 +1,14 @@
+C:\Users\p517arp\source\repos\maus\maus\bin\Release\maus.exe.config
+C:\Users\p517arp\source\repos\maus\maus\bin\Release\maus.exe
+C:\Users\p517arp\source\repos\maus\maus\bin\Release\maus.pdb
+C:\Users\p517arp\source\repos\maus\maus\obj\Release\maus.csproj.AssemblyReference.cache
+C:\Users\p517arp\source\repos\maus\maus\obj\Release\MainWindow.baml
+C:\Users\p517arp\source\repos\maus\maus\obj\Release\MainWindow.g.cs
+C:\Users\p517arp\source\repos\maus\maus\obj\Release\App.g.cs
+C:\Users\p517arp\source\repos\maus\maus\obj\Release\maus_MarkupCompile.cache
+C:\Users\p517arp\source\repos\maus\maus\obj\Release\maus.g.resources
+C:\Users\p517arp\source\repos\maus\maus\obj\Release\maus.Properties.Resources.resources
+C:\Users\p517arp\source\repos\maus\maus\obj\Release\maus.csproj.GenerateResource.cache
+C:\Users\p517arp\source\repos\maus\maus\obj\Release\maus.csproj.CoreCompileInputs.cache
+C:\Users\p517arp\source\repos\maus\maus\obj\Release\maus.exe
+C:\Users\p517arp\source\repos\maus\maus\obj\Release\maus.pdb
