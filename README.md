@@ -1,4 +1,4 @@
-<p align="center">
+<p align="start">
   <img width="64" height="64" alt="maus icon" src="https://github.com/user-attachments/assets/79d2a23f-c941-49be-a478-1e7b894f1de1" />
 </p>
 
