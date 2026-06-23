@@ -21,7 +21,8 @@ namespace maus
         private const int HOTKEY_ID = 1;
         private const int EMERGENCY_HOTKEY_ID = 2;
         private const int WM_HOTKEY = 0x0312;
-        private const string APP_VERSION = "v1.1";
+        private const string APP_VERSION = "v1.2";
+        private int repeatUntil = -1;
 
 
         // =========================
@@ -195,37 +196,54 @@ namespace maus
 
         private void Start_Clicker()
         {
-            StatusText.Text = "Status: On";
-
-            int hours = 0;
-            int minutes = 0;
-            int seconds = 0;
-            int milliseconds = 0;
-
-
-            int.TryParse(HoursIntervalBox.Text, out hours);
-            int.TryParse(MinutesIntervalBox.Text, out minutes);
-            int.TryParse(SecondsIntervalBox.Text, out seconds);
-            int.TryParse(MillisecondsIntervalBox.Text, out milliseconds);
-
-
-            int interval =
-                (hours * 60 * 60 * 1000)
-                + (minutes * 60 * 1000)
-                + (seconds * 1000)
-                + milliseconds;
-
-            if (interval < 1)
+            if (!isRunning) 
             {
-                interval = 1;
+                StatusText.Text = "Status: On";
+
+                int hours = 0;
+                int minutes = 0;
+                int seconds = 0;
+                int milliseconds = 0;
+
+
+                int.TryParse(HoursIntervalBox.Text, out hours);
+                int.TryParse(MinutesIntervalBox.Text, out minutes);
+                int.TryParse(SecondsIntervalBox.Text, out seconds);
+                int.TryParse(MillisecondsIntervalBox.Text, out milliseconds);
+
+
+                int interval =
+                    (hours * 60 * 60 * 1000)
+                    + (minutes * 60 * 1000)
+                    + (seconds * 1000)
+                    + milliseconds;
+
+                if (interval < 1)
+                {
+                    interval = 1;
+                }
+
+                repeatUntil = int.Parse(RepeatCountBox.Text);
+
+                clickTimer = new System.Threading.Timer(_ =>
+                {
+                    if (repeatUntil > 0)
+                    {
+                        SimulateMouse_Click();
+                        repeatUntil--;
+                    }
+                    else if (repeatUntil == 0)
+                    {
+                        Stop_Clicker();
+                    }
+                    else
+                    {
+                        SimulateMouse_Click();
+                    }
+                }, null, 0, interval);
+
+                isRunning = true;
             }
-
-            clickTimer = new System.Threading.Timer(_ =>
-            {
-                SimulateMouse_Click();
-            }, null, 0, interval);
-
-            isRunning = true;
         }
 
         private void Stop_Clicker()
